@@ -9,7 +9,6 @@
 #include "json.hpp"
 #include "spline.h"
 
-// for convenience
 using nlohmann::json;
 using std::string;
 using std::vector;
@@ -147,7 +146,7 @@ int main() {
             else if (!car_right && car_lane != 2) {  // Lane Change Right.
               ++car_lane;
             }
-            else {  // Reduce Speed.
+            else {  // Keep Lane, Reduce Speed.
               car_speed_diff = -MAXIMUM_ACCELERATION;
             }
           }
@@ -186,10 +185,9 @@ int main() {
           pts_y.push_back(target_wp2[1]);
           pts_y.push_back(target_wp3[1]);
 
+          //// Generate trajectory to achieve the target maneuver.
           // Convert waypoint coordinates to car local coordinates.
           globalToLocalCoordinateTransform(pts_x, pts_y, ref_yaw);
-
-          //// Generate trajectory to achieve the target maneuver.
           tk::spline s;
           s.set_points(pts_x, pts_y);
 
@@ -197,19 +195,21 @@ int main() {
           double target_x = 30.;
           double target_y = s(target_x);
           double target_distance = get2DVectorMagnitude(target_x, target_y);
-          double next_x = 0.;
-          for (int i=1; i+prev_path_size < NUM_TRAJECTORY_POINTS; ++i) {
-            ref_speed += car_speed_diff;
-            ref_speed = clipCarSpeed(ref_speed);
 
-            double speed_factor = target_distance / (CONTROLLER_WAYPOINT_INTERVAL * ref_speed / MPH_TO_METRE_PER_SEC);
-            double x_coord = next_x + target_x / speed_factor;
+          double next_x = 0.;
+
+          for(int i=1; i < NUM_TRAJECTORY_POINTS-prev_path_size; ++i) {
+            ref_speed += car_speed_diff;
+            clipCarSpeed(ref_speed);
+
+            double speed_alpha = target_distance / (CONTROLLER_WAYPOINT_INTERVAL * ref_speed / MPH_TO_METRE_PER_SEC);
+            double x_coord = next_x + target_x / speed_alpha;
             double y_coord = s(x_coord);
 
             next_x = x_coord;
-            vector<double> global_xy = localToGlobalCoordinateTransform(x_coord, y_coord, ref_yaw);
-            x_coord += ref_x + global_xy[0];
-            y_coord += ref_y + global_xy[1];
+            vector<double> global_coord = localToGlobalCoordinateTransform(x_coord, y_coord, ref_yaw);
+            x_coord = ref_x + global_coord[0];
+            y_coord = ref_y + global_coord[1];
 
             next_x_vals.push_back(x_coord);
             next_y_vals.push_back(y_coord);
@@ -220,14 +220,14 @@ int main() {
           msgJson["next_y"] = next_y_vals;
           auto msg = "42[\"control\","+ msgJson.dump()+"]";
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-        }  // end "telemetry" if
+        }
       } else {
         // Manual driving
         std::string msg = "42[\"manual\",{}]";
         ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
       }
-    }  // end websocket if
-  }); // end h.onMessage
+    }
+  });
 
   h.onConnection([&h](uWS::WebSocket<uWS::SERVER> ws, uWS::HttpRequest req) {
     std::cout << "Connected!!!" << std::endl;

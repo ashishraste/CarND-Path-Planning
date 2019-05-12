@@ -205,7 +205,6 @@ struct Waypoints* getContinuingWaypoints(
   return wps;
 }
 
-
 void globalToLocalCoordinateTransform(vector<double>& pts_x, vector<double>& pts_y, double yaw) {
   assert(pts_x.size() == pts_y.size());
   double start_x = pts_x[0];
@@ -224,14 +223,13 @@ vector<double> localToGlobalCoordinateTransform(const double& x, const double& y
   return vector<double>{x1, y1};
 }
 
-double clipCarSpeed(const double& inputSpeed) {
+void clipCarSpeed(double& inputSpeed) {
   if (inputSpeed > MAXIMUM_SPEED) {
-    return MAXIMUM_SPEED;
+    inputSpeed = MAXIMUM_SPEED;
   }
   else if (inputSpeed < MAXIMUM_ACCELERATION) {
-    return MAXIMUM_ACCELERATION;
+    inputSpeed = MAXIMUM_ACCELERATION;
   }
-  else return inputSpeed;
 }
 
 
