@@ -107,7 +107,7 @@ int main() {
             next_y_vals.push_back(previous_path_y[i]);
           }
 
-          //// Peediction: Loop through the detected vehicles, make predictions as to where they'd be by end of trajectory time.
+          //// Prediction: Loop through the detected vehicles, make predictions as to where they'd be by end of trajectory time.
           bool car_ahead = false;
           bool car_left = false;
           bool car_right = false;

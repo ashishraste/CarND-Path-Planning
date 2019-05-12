@@ -4,3 +4,4 @@ build/
 
 Dockerfile
 .dockerignore
+\.DS_Store
