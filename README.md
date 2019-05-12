@@ -64,10 +64,23 @@ These waypoints are computed using the approach described in the [next section](
 
 ### Methodology
 
-The approach taken to plan a path is broken down into three main sections: Behaviour Planning, 
-Maneuver Selection, and Trajectory Planning. Each of these sub-topics are described in the 
-following sections with reference to their implementation code.
+The approach taken to plan a path is broken down into three main sections: Prediction, Behaviour Planning, and Trajectory Planning. Each of these sub-topics are described in the following sections referring to their
+implementation.
+
+![path-planning](./images/path-planning-components.png)
+* Path Planning Components. Source: _Udacity Self-driving car Nanodegree_  
+
+#### Prediction
+
+Using the sensor-fusion input, the ego-car estimates the lane, position,
+and the next position of nearby vehicles.
 
 #### Behaviour Planning
 
+In order to drive safely and under legal constraints, the ego-car decides 
+the next _state_ that it wants to be in given current situation and state.
+
 #### Trajectory Planning
+
+Once we have a list of points in the selected maneuver, we create a trajectory using
+Spline interpolation. 
