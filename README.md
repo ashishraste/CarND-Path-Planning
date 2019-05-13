@@ -84,22 +84,29 @@ First we create an instance of [Vehicle](src/vehicle.h) for each nearby vehicle 
 Their projected coordinates are then calculated based on past trajectory
 waypoints-size. This helps us in estimating their position while executing
 the current trajectory. We then determine whether the detected vehicles are or 
-would be in the same lane, left lane or in the right lane.
+would be in the same lane, left lane or in the right lane. That leads us to decide what
+behaviour the ego-car should choose, as described in the next step.
 
 #### Behaviour Planning
 
 In order to drive safely and under legal constraints, the ego-car decides 
 the next _state_ it wants to be in given current situation and state. A simple
-behaviour planner determining one among three states: {Keep Lane, Lane Change
+behaviour planner determining one of three states: {Keep Lane, Lane Change
 Left, Lane Change Right} is implemented in lines [141-162](https://github.com/ashishraste/CarND-Path-Planning/blob/cebfd7c144c75a046b0db5d2f120be138ff7b122/src/main.cpp#L141). 
 
-The situation that this step assesses is whether there are one (or more)
-vehicle is in the ego-car's lane, or is in the left/right lanes. Based on
-this information provided by the [Prediction](#prediction) step, the behaviour
-planner picks the lane it wants the ego-car to be in. It does this by 
-maintaining a _safe Frenet S distance_ of 30 metres from the nearby vehicles.
-We also set a _car\_speed\_diff_ variable that is used to reduce the speed of 
-the ego-car if it approaches a relatively slow-moving vehicle ahead quickly.
+The situation that this step assesses is whether there are one or more
+vehicles in the ego-car's lane, or are to the left/right of its current lane.
+Based on this information provided by the [Prediction](#prediction) step, the behaviour-planner
+picks the lane it wants the ego-car to be in. For example, if we see we're fastly approaching
+a vehicle in our current lane, and if there are no vehicles within a _safe_ distance
+in the left lane, then we decide to Lane Change Left. The _safe_ distance is set to
+30 metres which ensures our ego-car wouldn't intend to change to a lane if there is a
+vehicle in that lane within 30 metres (Frenet S) distance in both forward and reverse directions.
+
+We also set a _car\_speed\_diff_ variable that is used to reduce the speed of the ego-car
+if it approaches a relatively slow-moving vehicle ahead. This variable is further
+used in [trajectory planning](#trajectory-planning), as described in the next section,
+to tune the speed at which the controller reaches the individual waypoints planned.
 
 #### Trajectory Planning
 
@@ -120,12 +127,12 @@ a forward distance of 30 metres, and for a total of 50 waypoints including
 previous path's waypoints. Each waypoint is planned taking into consideration
 the reference speed, _car\_speed\_diff_, the ego-car is recommended to travel
 at as determined by the [behaviour planner](#behaviour-planning), and the
-amount of time (and hence distance) it can take for the controller. 
+amount of time it can take for the controller. 
 Once the coordinates are planned, they are
 converted back to global XY coordinates. This is implemented in lines
 [195-216](https://github.com/ashishraste/CarND-Path-Planning/blob/cebfd7c144c75a046b0db5d2f120be138ff7b122/src/main.cpp#L195).
 
-This step wraps up the path-planner where we have the next set of waypoints
-for the controller to achieve.
+This step wraps up the path-planner where we have the output i.e. the next set of waypoints that the
+controller has to achieve.
 
 ---
